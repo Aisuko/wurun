@@ -151,21 +151,19 @@ class Wurun:
         """
         sem = asyncio.Semaphore(concurrency)
         
-        # Create tasks with index mapping
-        task_to_index = {}
-        tasks = []
-        for idx, msgs in enumerate(all_messages):
-            task = asyncio.create_task(
-                cls.ask(msgs, semaphore=sem, timeout=timeout, return_meta=return_meta)
-            )
-            task_to_index[task] = idx
-            tasks.append(task)
-
+        # Simple approach: use asyncio.wait with FIRST_COMPLETED
+        tasks = {
+            asyncio.create_task(cls.ask(msgs, semaphore=sem, timeout=timeout, return_meta=return_meta)): idx
+            for idx, msgs in enumerate(all_messages)
+        }
+        
         finished: List[Tuple[int, Any]] = []
-        for task in asyncio.as_completed(tasks):
-            res = await task
-            idx = task_to_index[task]
-            finished.append((idx, res))
+        while tasks:
+            done, pending = await asyncio.wait(tasks.keys(), return_when=asyncio.FIRST_COMPLETED)
+            for task in done:
+                idx = tasks.pop(task)
+                res = await task
+                finished.append((idx, res))
         return finished
 
     # ---------- convenience printers (no prompt mutation) ----------
