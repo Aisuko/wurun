@@ -64,7 +64,7 @@ class Wurun:
     async def _chat_once(
         cls,
         *,
-        messages: List[Dict[str, str]],
+        messages: List[Dict[str, Any]],
         timeout: Optional[float] = None,
     ) -> str:
         """
@@ -75,15 +75,18 @@ class Wurun:
             raise RuntimeError("Wurun.setup(...) must be called before use.")
         resp = await cls._client.chat.completions.create(
             model=cls._deployment,
-            messages=messages,
+            messages=messages,  # type: ignore
             timeout=timeout,
         )
-        return resp.choices[0].message.content
+        content = resp.choices[0].message.content
+        if content is None:
+            raise ValueError("No content in response")
+        return content
 
     @classmethod
     async def ask(
         cls,
-        messages: List[Dict[str, str]],
+        messages: List[Dict[str, Any]],
         *,
         semaphore: Optional[asyncio.Semaphore] = None,
         attempts: int = 5,
@@ -124,7 +127,7 @@ class Wurun:
     @classmethod
     async def run_gather(
         cls,
-        all_messages: List[List[Dict[str, str]]],
+        all_messages: List[List[Dict[str, Any]]],
         *,
         concurrency: int = 5,
         timeout: Optional[float] = None,
@@ -136,13 +139,13 @@ class Wurun:
         """
         sem = asyncio.Semaphore(concurrency)
         coros = [cls.ask(msgs, semaphore=sem, timeout=timeout, return_meta=return_meta) for msgs in all_messages]
-        return await asyncio.gather(*coros)
+        return await asyncio.gather(*coros)  # type: ignore
 
     # ---------- batch: as-finished (with indices) ----------
     @classmethod
     async def run_as_completed(
         cls,
-        all_messages: List[List[Dict[str, str]]],
+        all_messages: List[List[Dict[str, Any]]],
         *,
         concurrency: int = 5,
         timeout: Optional[float] = None,
@@ -173,7 +176,7 @@ class Wurun:
     @classmethod
     async def print_qna_ordered(
         cls,
-        all_messages: List[List[Dict[str, str]]],
+        all_messages: List[List[Dict[str, Any]]],
         *,
         concurrency: int = 5,
         timeout: Optional[float] = None,
@@ -187,7 +190,7 @@ class Wurun:
     @classmethod
     async def print_as_ready(
         cls,
-        all_messages: List[List[Dict[str, str]]],
+        all_messages: List[List[Dict[str, Any]]],
         *,
         concurrency: int = 5,
         timeout: Optional[float] = None,
@@ -226,4 +229,5 @@ class Wurun:
             raise ImportError("pandas is required for DataFrame support. Install with: pip install pandas")
 
         all_messages = df[messages_column].tolist()
-        return await cls.run_gather(all_messages, concurrency=concurrency, timeout=timeout, return_meta=return_meta)
+        results = await cls.run_gather(all_messages, concurrency=concurrency, timeout=timeout, return_meta=return_meta)
+        return results
