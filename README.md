@@ -48,6 +48,11 @@ answers = await Wurun.run_gather(questions, concurrency=2)
 await Wurun.close()
 ```
 
+## 🧪 Practical Demo on Kaggle
+
+[![Kaggle](https://img.shields.io/badge/Kaggle-Notebook-blue?logo=kaggle)](https://www.kaggle.com/code/aisuko/manually-testing-wurun)
+
+
 ## API Reference
 
 ### Setup
