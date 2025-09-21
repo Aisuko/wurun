@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wurun - Async OpenAI API Wrapper</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+</head>
+<body class="bg-gray-900 text-gray-100">
+    <nav class="bg-gray-800 shadow-lg">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <h1 class="text-2xl font-bold text-blue-400">Wurun</h1>
+                <div class="space-x-4">
+                    <a href="#features" class="hover:text-blue-400">Features</a>
+                    <a href="#installation" class="hover:text-blue-400">Installation</a>
+                    <a href="#usage" class="hover:text-blue-400">Usage</a>
+                    <a href="https://github.com/wurun/wurun" class="bg-blue-600 px-4 py-2 rounded hover:bg-blue-700">GitHub</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header class="bg-gradient-to-r from-blue-600 to-purple-600 py-20">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <h1 class="text-5xl font-bold mb-4">Wurun</h1>
+            <p class="text-xl mb-8">Async OpenAI API wrapper optimized for Jupyter notebooks</p>
+            <div class="space-x-4">
+                <a href="#installation" class="bg-white text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100">Get Started</a>
+                <a href="https://pypi.org/project/wurun/" class="border border-white px-6 py-3 rounded-lg hover:bg-white hover:text-gray-900">PyPI</a>
+            </div>
+        </div>
+    </header>
+
+    <section id="features" class="py-16">
+        <div class="max-w-6xl mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12">Features</h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-3 text-blue-400">HTTP/2 Connection Pooling</h3>
+                    <p>Shared client for efficient API calls with persistent connections</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-3 text-blue-400">Robust Retry Logic</h3>
+                    <p>Exponential backoff for rate limits and errors with configurable attempts</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-3 text-blue-400">Batch Processing</h3>
+                    <p>Concurrent API calls with semaphore control and order preservation</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-3 text-blue-400">Jupyter Optimized</h3>
+                    <p>Clean notebook output and error handling for interactive development</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-3 text-blue-400">DataFrame Support</h3>
+                    <p>Process pandas DataFrames with built-in message column handling</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-3 text-blue-400">Zero Configuration</h3>
+                    <p>Simple setup that works with OpenAI and Azure OpenAI out of the box</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="installation" class="py-16 bg-gray-800">
+        <div class="max-w-4xl mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-8">Installation</h2>
+            <div class="space-y-4">
+                <div>
+                    <h3 class="text-lg font-semibold mb-2">Production Use</h3>
+                    <pre><code class="language-bash">pip install wurun</code></pre>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-2">With DataFrame Support</h3>
+                    <pre><code class="language-bash">pip install wurun[dataframe]</code></pre>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-2">Development</h3>
+                    <pre><code class="language-bash">pip install wurun[dev]</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="usage" class="py-16">
+        <div class="max-w-6xl mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12">Quick Start</h2>
+            <div class="grid lg:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Basic Usage</h3>
+                    <pre><code class="language-python">from wurun import Wurun
+
+# Setup once per kernel
+await Wurun.setup(
+    endpoint="https://api.openai.com/v1",
+    api_key="your-api-key",
+    deployment_name="gpt-3.5-turbo"
+)
+
+# Single question
+messages = [{"role": "user", "content": "Explain asyncio"}]
+answer = await Wurun.ask(messages)
+print(answer)
+
+# Cleanup
+await Wurun.close()</code></pre>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Batch Processing</h3>
+                    <pre><code class="language-python"># Batch processing
+questions = [
+    [{"role": "user", "content": "What is Python?"}],
+    [{"role": "user", "content": "What is JavaScript?"}]
+]
+answers = await Wurun.run_gather(questions, concurrency=2)
+
+# DataFrame processing
+import pandas as pd
+df = pd.DataFrame({'messages': questions})
+answers = await Wurun.run_dataframe(df, 'messages')
+df['answers'] = answers</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-16 bg-gray-800">
+        <div class="max-w-4xl mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-8">API Reference</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">Setup & Teardown</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><code class="bg-gray-700 px-2 py-1 rounded">Wurun.setup()</code> - Initialize client</li>
+                        <li><code class="bg-gray-700 px-2 py-1 rounded">Wurun.close()</code> - Clean up resources</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">Single Calls</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><code class="bg-gray-700 px-2 py-1 rounded">Wurun.ask()</code> - Single API call with retry</li>
+                        <li><code class="bg-gray-700 px-2 py-1 rounded">return_meta=True</code> - Include latency and retry count</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">Batch Processing</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><code class="bg-gray-700 px-2 py-1 rounded">Wurun.run_gather()</code> - Preserve input order</li>
+                        <li><code class="bg-gray-700 px-2 py-1 rounded">Wurun.run_as_completed()</code> - Process as results finish</li>
+                        <li><code class="bg-gray-700 px-2 py-1 rounded">Wurun.run_dataframe()</code> - Process DataFrame columns</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">Notebook Helpers</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><code class="bg-gray-700 px-2 py-1 rounded">Wurun.print_qna_ordered()</code> - Pretty print Q&A</li>
+                        <li><code class="bg-gray-700 px-2 py-1 rounded">Wurun.print_as_ready()</code> - Print as completed</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-gray-900 py-8">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <p class="text-gray-400">© 2024 Wurun Contributors. Licensed under MIT.</p>
+            <div class="mt-4 space-x-4">
+                <a href="https://github.com/wurun/wurun" class="text-blue-400 hover:text-blue-300">GitHub</a>
+                <a href="https://pypi.org/project/wurun/" class="text-blue-400 hover:text-blue-300">PyPI</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>hljs.highlightAll();</script>
+</body>
+</html>
