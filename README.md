@@ -108,6 +108,19 @@ pip install .[dev]
 pytest test_wurun.py -v
 ```
 
+## Release Process
+
+1. **Create PR**: Make changes and create pull request to `main`
+2. **Auto Draft**: Release Drafter automatically creates/updates draft release
+3. **Publish Release**: Go to GitHub Releases, edit draft, and publish
+4. **Auto Deploy**: Publishing triggers automatic PyPI deployment
+
+### Manual Version Update
+```bash
+# Update version in pyproject.toml
+python scripts/update_version.py 1.2.3
+```
+
 ## License
 
 MIT

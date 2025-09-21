@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install .[dev,dataframe]
+        pip install flake8 black isort
+
+    - name: Code quality checks
+      run: |
+        # Check code formatting
+        black --check wurun.py test_wurun.py
+        
+        # Check import sorting
+        isort --check-only wurun.py test_wurun.py
+        
+        # Lint code
+        flake8 wurun.py test_wurun.py --max-line-length=120 --ignore=E203,W503
+
+    - name: Run tests
+      run: |
+        pytest test_wurun.py -v --tb=short
+
+  code-quality:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install .[dev,dataframe]
+        pip install flake8 black isort mypy
+
+    - name: Format check
+      run: black --check --diff wurun.py test_wurun.py
+
+    - name: Import sort check
+      run: isort --check-only --diff wurun.py test_wurun.py
+
+    - name: Lint
+      run: flake8 wurun.py test_wurun.py --max-line-length=120 --ignore=E203,W503
+
+    - name: Type check
+      run: mypy wurun.py --ignore-missing-imports

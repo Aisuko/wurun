@@ -1,7 +1,15 @@
-import asyncio, time
+import asyncio
+import time
+from typing import Any, Dict, List, Optional, Tuple
+
 import httpx
-from typing import List, Optional, Tuple, Any, Dict
-from openai import AsyncOpenAI, APIError, RateLimitError
+from openai import APIError, AsyncOpenAI, RateLimitError
+
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
+
 
 class Wurun:
     _http_client: Optional[httpx.AsyncClient] = None
@@ -31,10 +39,7 @@ class Wurun:
             cls._http_client = httpx.AsyncClient(
                 http2=http2,
                 timeout=timeout,
-                limits=httpx.Limits(
-                    max_connections=max_connections,
-                    max_keepalive_connections=max_keepalive
-                ),
+                limits=httpx.Limits(max_connections=max_connections, max_keepalive_connections=max_keepalive),
             )
         cls._client = AsyncOpenAI(
             base_url=endpoint,
@@ -91,6 +96,7 @@ class Wurun:
         Robust call with optional concurrency guard and retries.
         `messages` must already be built. No system prompt injection.
         """
+
         async def _work():
             start = time.perf_counter()
             delay = initial_backoff
@@ -129,10 +135,7 @@ class Wurun:
         message lists. Returns answers aligned with input order.
         """
         sem = asyncio.Semaphore(concurrency)
-        coros = [
-            cls.ask(msgs, semaphore=sem, timeout=timeout, return_meta=return_meta)
-            for msgs in all_messages
-        ]
+        coros = [cls.ask(msgs, semaphore=sem, timeout=timeout, return_meta=return_meta) for msgs in all_messages]
         return await asyncio.gather(*coros)
 
     # ---------- batch: as-finished (with indices) ----------
@@ -150,13 +153,13 @@ class Wurun:
         Returns a list of (index, answer_or_tuple) in completion order.
         """
         sem = asyncio.Semaphore(concurrency)
-        
+
         # Simple approach: use asyncio.wait with FIRST_COMPLETED
         tasks = {
             asyncio.create_task(cls.ask(msgs, semaphore=sem, timeout=timeout, return_meta=return_meta)): idx
             for idx, msgs in enumerate(all_messages)
         }
-        
+
         finished: List[Tuple[int, Any]] = []
         while tasks:
             done, pending = await asyncio.wait(tasks.keys(), return_when=asyncio.FIRST_COMPLETED)
@@ -194,3 +197,33 @@ class Wurun:
         for idx, a in results:
             print(f"[{idx}] A: {a}")
         print(f"\nDone in {time.perf_counter() - start:.2f}s for {len(all_messages)} prompts")
+
+    # ---------- dataframe helper ----------
+    @classmethod
+    async def run_dataframe(
+        cls,
+        df,
+        messages_column: str,
+        *,
+        concurrency: int = 5,
+        timeout: Optional[float] = None,
+        return_meta: bool = False,
+    ) -> List[Any]:
+        """
+        Process messages from a DataFrame column and return answers in order.
+
+        Args:
+            df: DataFrame containing messages
+            messages_column: Column name containing List[Dict[str, str]] messages
+            concurrency: Number of concurrent requests
+            timeout: Request timeout
+            return_meta: Whether to return metadata
+
+        Returns:
+            List of answers in same order as DataFrame rows
+        """
+        if pd is None:
+            raise ImportError("pandas is required for DataFrame support. Install with: pip install pandas")
+
+        all_messages = df[messages_column].tolist()
+        return await cls.run_gather(all_messages, concurrency=concurrency, timeout=timeout, return_meta=return_meta)
