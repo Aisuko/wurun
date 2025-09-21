@@ -123,4 +123,4 @@ python scripts/update_version.py 1.2.3
 
 ## License
 
-MIT
+Apache License 2.0
