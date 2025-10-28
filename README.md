@@ -1,5 +1,11 @@
 # Wurun
 
+[![CI](https://github.com/Aisuko/wurun/actions/workflows/ci.yml/badge.svg)](https://github.com/Aisuko/wurun/actions/workflows/ci.yml)
+[![PyPI version](https://badge.fury.io/py/wurun.svg)](https://badge.fury.io/py/wurun)
+[![Python versions](https://img.shields.io/pypi/pyversions/wurun.svg)](https://pypi.org/project/wurun/)
+[![License](https://img.shields.io/github/license/Aisuko/wurun.svg)](https://github.com/Aisuko/wurun/blob/main/LICENSE)
+[![Release](https://img.shields.io/github/v/release/Aisuko/wurun.svg)](https://github.com/Aisuko/wurun/releases)
+
 Async OpenAI API wrapper optimized for Jupyter notebooks with connection pooling, retry logic, and batch processing.
 
 ## Features

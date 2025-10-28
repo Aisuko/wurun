@@ -111,7 +111,9 @@ class Wurun:
             delay = initial_backoff
             for i in range(attempts):
                 try:
-                    ans = await cls._chat_once(messages=messages, timeout=timeout, max_tokens=max_tokens, temperature=temperature)
+                    ans = await cls._chat_once(
+                        messages=messages, timeout=timeout, max_tokens=max_tokens, temperature=temperature
+                    )
                     lat = time.perf_counter() - start
                     return ans, {"latency": lat, "retries": i}
                 except (RateLimitError, APIError) as e:
@@ -146,7 +148,17 @@ class Wurun:
         message lists. Returns answers aligned with input order.
         """
         sem = asyncio.Semaphore(concurrency)
-        coros = [cls.ask(msgs, semaphore=sem, timeout=timeout, return_meta=return_meta, max_tokens=max_tokens, temperature=temperature) for msgs in all_messages]
+        coros = [
+            cls.ask(
+                msgs,
+                semaphore=sem,
+                timeout=timeout,
+                return_meta=return_meta,
+                max_tokens=max_tokens,
+                temperature=temperature,
+            )
+            for msgs in all_messages
+        ]
         return await asyncio.gather(*coros)  # type: ignore
 
     # ---------- batch: as-finished (with indices) ----------
@@ -169,7 +181,16 @@ class Wurun:
 
         # Simple approach: use asyncio.wait with FIRST_COMPLETED
         tasks = {
-            asyncio.create_task(cls.ask(msgs, semaphore=sem, timeout=timeout, return_meta=return_meta, max_tokens=max_tokens, temperature=temperature)): idx
+            asyncio.create_task(
+                cls.ask(
+                    msgs,
+                    semaphore=sem,
+                    timeout=timeout,
+                    return_meta=return_meta,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                )
+            ): idx
             for idx, msgs in enumerate(all_messages)
         }
 
@@ -193,7 +214,9 @@ class Wurun:
         max_tokens: int = 1024,
         temperature: float = 0,
     ) -> None:
-        answers = await cls.run_gather(all_messages, concurrency=concurrency, timeout=timeout, max_tokens=max_tokens, temperature=temperature)
+        answers = await cls.run_gather(
+            all_messages, concurrency=concurrency, timeout=timeout, max_tokens=max_tokens, temperature=temperature
+        )
         for msgs, a in zip(all_messages, answers):
             # try to display the last user message for readability
             last_user = next((m["content"] for m in reversed(msgs) if m.get("role") == "user"), "<no user msg>")
@@ -210,7 +233,9 @@ class Wurun:
         temperature: float = 0,
     ) -> None:
         start = time.perf_counter()
-        results = await cls.run_as_completed(all_messages, concurrency=concurrency, timeout=timeout, max_tokens=max_tokens, temperature=temperature)
+        results = await cls.run_as_completed(
+            all_messages, concurrency=concurrency, timeout=timeout, max_tokens=max_tokens, temperature=temperature
+        )
         for idx, a in results:
             print(f"[{idx}] A: {a}")
         print(f"\nDone in {time.perf_counter() - start:.2f}s for {len(all_messages)} prompts")
@@ -245,5 +270,12 @@ class Wurun:
             raise ImportError("pandas is required for DataFrame support. Install with: pip install pandas")
 
         all_messages = df[messages_column].tolist()
-        results = await cls.run_gather(all_messages, concurrency=concurrency, timeout=timeout, return_meta=return_meta, max_tokens=max_tokens, temperature=temperature)
+        results = await cls.run_gather(
+            all_messages,
+            concurrency=concurrency,
+            timeout=timeout,
+            return_meta=return_meta,
+            max_tokens=max_tokens,
+            temperature=temperature,
+        )
         return results
