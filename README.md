@@ -17,7 +17,7 @@ Async OpenAI API wrapper optimized for Jupyter notebooks with connection pooling
 pip install .
 
 # Development (includes testing tools)
-pip install .[dev]
+pip install ".[dev]"
 ```
 
 ## Quick Start
@@ -37,6 +37,9 @@ messages = [{"role": "user", "content": "Explain asyncio"}]
 answer = await Wurun.ask(messages)
 print(answer)
 
+# Custom parameters
+answer = await Wurun.ask(messages, max_tokens=512, temperature=0.7)
+
 # Batch processing
 questions = [
     [{"role": "user", "content": "What is Python?"}],
@@ -46,6 +49,21 @@ answers = await Wurun.run_gather(questions, concurrency=2)
 
 # Cleanup
 await Wurun.close()
+```
+
+## DataFrame Processing
+
+```python
+import pandas as pd
+df = pd.DataFrame({
+    "id": [1, 2, 3],
+    "messages": [
+        [{"role": "user", "content": "What is Python?"}],
+        [{"role": "user", "content": "What is JavaScript?"}],
+        [{"role": "user", "content": "What is Go?"}]
+    ]
+})
+results = await Wurun.run_dataframe(df, "messages", concurrency=2)
 ```
 
 ## 🧪 Practical Demo on Kaggle
@@ -62,11 +80,17 @@ await Wurun.close()
 ### Single Calls
 - `Wurun.ask()` - Single API call with retry logic
 - `return_meta=True` - Include latency and retry count
+- `max_tokens=1024` - Maximum tokens in response (default: 1024)
+- `temperature=0` - Response randomness (default: 0)
 
 ### Batch Processing
 - `Wurun.run_gather()` - Preserve input order
 - `Wurun.run_as_completed()` - Process as results finish
 - `concurrency` parameter controls parallel requests
+- `max_tokens` and `temperature` available on all batch methods
+
+### DataFrame Processing
+- `Wurun.run_dataframe()` - Process messages from DataFrame column
 
 ### Notebook Helpers
 - `Wurun.print_qna_ordered()` - Pretty print Q&A format
@@ -95,7 +119,9 @@ result = await Wurun.ask(
     messages,
     attempts=3,
     initial_backoff=1.0,
-    max_backoff=10.0
+    max_backoff=10.0,
+    max_tokens=512,
+    temperature=0.7
 )
 
 # Get metadata
@@ -107,7 +133,7 @@ print(f"Latency: {meta['latency']:.2f}s, Retries: {meta['retries']}")
 
 ```bash
 # Install dev dependencies
-pip install .[dev]
+pip install ".[dev]"
 
 # Run tests
 pytest test_wurun.py -v
