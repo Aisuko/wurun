@@ -60,8 +60,3 @@ dataframe = [
     "pandas>=1.0.0"
 ]
 
-[tool.semantic_release]
-version_toml = ["pyproject.toml:project.version"]
-build_command = "pip install build && python -m build"
-upload_to_pypi = true
-upload_to_release = true
