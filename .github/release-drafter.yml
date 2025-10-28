@@ -1,5 +1,5 @@
-name-template: 'v$RESOLVED_VERSION'
-tag-template: 'v$RESOLVED_VERSION'
+name-template: 'v$NEXT_PATCH_VERSION'
+tag-template: 'v$NEXT_PATCH_VERSION'
 categories:
   - title: '🚀 Features'
     labels:
@@ -27,6 +27,7 @@ version-resolver:
     labels:
       - 'patch'
   default: patch
+version-template: '$MAJOR.$MINOR.$PATCH'
 template: |
   ## Changes
 
