@@ -199,19 +199,23 @@ async def test_run_dataframe_with_meta(setup_wurun):
 @pytest.mark.asyncio
 async def test_run_dataframe_with_parameters(setup_wurun):
     """Test DataFrame processing with max_tokens and temperature parameters."""
-    df = pd.DataFrame({
-        "messages": [
-            [{"role": "system", "content": "You are a classifier. Return probabilities 0.00-1.00."},
-             {"role": "user", "content": "Evaluate: test sentence 1"}],
-            [{"role": "system", "content": "You are a classifier. Return probabilities 0.00-1.00."},
-             {"role": "user", "content": "Evaluate: test sentence 2"}]
-        ]
-    })
+    df = pd.DataFrame(
+        {
+            "messages": [
+                [
+                    {"role": "system", "content": "You are a classifier. Return probabilities 0.00-1.00."},
+                    {"role": "user", "content": "Evaluate: test sentence 1"},
+                ],
+                [
+                    {"role": "system", "content": "You are a classifier. Return probabilities 0.00-1.00."},
+                    {"role": "user", "content": "Evaluate: test sentence 2"},
+                ],
+            ]
+        }
+    )
 
     with patch("wurun.Wurun._chat_once", return_value="response") as mock_chat:
-        results = await Wurun.run_dataframe(
-            df, "messages", max_tokens=512, temperature=0.7, concurrency=1
-        )
+        results = await Wurun.run_dataframe(df, "messages", max_tokens=512, temperature=0.7, concurrency=1)
         assert len(results) == 2
         assert all(r == "response" for r in results)
 
@@ -229,14 +233,20 @@ async def test_run_dataframe_with_parameters(setup_wurun):
 @pytest.mark.asyncio
 async def test_real_dataframe_with_parameters(setup_wurun):
     """Test DataFrame processing with real API calls and parameters."""
-    df = pd.DataFrame({
-        "messages": [
-            [{"role": "system", "content": "You are a helpful assistant. Respond briefly."},
-             {"role": "user", "content": "Say 'Test 1' and nothing else."}],
-            [{"role": "system", "content": "You are a helpful assistant. Respond briefly."},
-             {"role": "user", "content": "Say 'Test 2' and nothing else."}]
-        ]
-    })
+    df = pd.DataFrame(
+        {
+            "messages": [
+                [
+                    {"role": "system", "content": "You are a helpful assistant. Respond briefly."},
+                    {"role": "user", "content": "Say 'Test 1' and nothing else."},
+                ],
+                [
+                    {"role": "system", "content": "You are a helpful assistant. Respond briefly."},
+                    {"role": "user", "content": "Say 'Test 2' and nothing else."},
+                ],
+            ]
+        }
+    )
 
     # No mocking - real API call
     results = await Wurun.run_dataframe(df, "messages", temperature=0.1, concurrency=1)
