@@ -84,7 +84,7 @@ class Wurun:
         )
         content = resp.choices[0].message.content
         if content is None:
-            raise ValueError("No content in response")
+            return "[ERROR] No content in response"
         return content
 
     @classmethod
@@ -116,7 +116,7 @@ class Wurun:
                     )
                     lat = time.perf_counter() - start
                     return ans, {"latency": lat, "retries": i}
-                except (RateLimitError, APIError) as e:
+                except (RateLimitError, APIError, ValueError) as e:
                     if i == attempts - 1:
                         lat = time.perf_counter() - start
                         return f"[ERROR] {type(e).__name__}: {e}", {"latency": lat, "retries": i}
